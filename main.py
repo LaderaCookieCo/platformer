@@ -38,9 +38,17 @@ class Platform(pygame.sprite.Sprite):
 		self.surf = pygame.Surface((rand(50, 100), 12))
 		self.surf.fill((250, rand(20, 100), 70))
 		self.rect = self.surf.get_rect(center = (rand(0, WIDTH), rand(0, (HEIGHT - 200))))
-
+		self.speed = rand(-1, 1)
+	
 	def move(self):
-		
+		self.rect.x += self.speed
+		if self.rect.x < (-self.rect.width/2):
+			self.rect.x = (WIDTH + self.rect.width/2)
+		if self.rect.x > (WIDTH + self.rect.width/2):
+			self.rect.x = (-self.rect.width/2)
+
+	def update(self):
+		pass
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
@@ -77,6 +85,7 @@ class Player(pygame.sprite.Sprite):
 				self.vel.y = 0
 				self.jumpcount = 0
 				self.pos.y = hits[0].rect.top + 1
+				self.pos.x += hits[0].speed
 			
 
 	def jump(self):
@@ -134,6 +143,7 @@ def startnew():
 	pt1 = Platform()
 	pt1.surf = pygame.Surface((WIDTH, 200))
 	pt1.surf.fill((27, 200, 4))
+	pt1.speed = 0
 	pt1.rect = pt1.surf.get_rect(topleft = (0, int(HEIGHT)/1.32))
 	platforms = pygame.sprite.Group()
 
@@ -166,10 +176,10 @@ while True:
 	if gamestate:
 		displaySurface.fill((0, 0, 0))
 		plat_gen()
-		p1.move()
-		p1.update()
 		for sprite in all_sprites:
 			displaySurface.blit(sprite.surf, sprite.rect)
+			sprite.move()
+			sprite.update()
 		scoresurf = f.render(str(p1.score//10), True, (255, 255, 255))
 		displaySurface.blit(scoresurf,(WIDTH/30, 20))
 		if p1.rect.top <= HEIGHT/3:
