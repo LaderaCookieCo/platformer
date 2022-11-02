@@ -42,13 +42,15 @@ class Platform(pygame.sprite.Sprite):
 	
 	def move(self):
 		self.rect.x += self.speed
-		if self.rect.x < (-self.rect.width/2):
-			self.rect.x = (WIDTH + self.rect.width/2)
-		if self.rect.x > (WIDTH + self.rect.width/2):
-			self.rect.x = (-self.rect.width/2)
+		if self.rect.center[0] < (-self.rect.width/2):
+			self.rect.x = (WIDTH)
+		if self.rect.center[0] > (WIDTH + self.rect.width/2):
+			self.rect.x = (-self.rect.width)
 
 	def update(self):
 		pass
+
+
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
@@ -61,6 +63,7 @@ class Player(pygame.sprite.Sprite):
 		self.acc = vec(0, 0)
 		self.jumpcount = 0
 		self.score = 0
+		self.plat = None
 		
 	def move(self):
 		self.acc = vec(0, ACC)
@@ -72,20 +75,23 @@ class Player(pygame.sprite.Sprite):
 		self.acc.x += self.vel.x * fric
 		self.vel += self.acc
 		self.pos += self.vel + 0.5 * self.acc
-		if self.pos.x < (-15):
-			self.pos.x = (WIDTH + 15)
-		if self.pos.x > (WIDTH + 15):
-			self.pos.x = (-15)
+		if not self.plat:
+			if self.pos.x < (-15):
+				self.pos.x = (WIDTH + 15)
+			if self.pos.x > (WIDTH + 15):
+				self.pos.x = (-15)
 		self.rect.midbottom = self.pos
 
 	def update(self):
 		hits = pygame.sprite.spritecollide(self, platforms, False)
+		self.plat = None
 		if self.vel.y >0:
 			if hits and self.rect.y < hits[0].rect.center[1]:
 				self.vel.y = 0
 				self.jumpcount = 0
 				self.pos.y = hits[0].rect.top + 1
 				self.pos.x += hits[0].speed
+				self.plat = hits[0]
 			
 
 	def jump(self):
@@ -96,6 +102,28 @@ class Player(pygame.sprite.Sprite):
 	def cancel_jump(self):
 		if self.vel.y < -5:
 			self.vel.y = -5
+
+class EvilPlayer (Player):
+	def __init__(self):
+		super().__init__()
+		self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT/1.32))
+		self.surf.fill((255, 255, 0))
+		self.speed = 0.3
+	def move(self):
+		self.acc = vec(0, ACC)
+		self.acc.x += self.vel.x * fric
+		self.vel += self.acc
+		self.pos += self.vel + 0.5 * self.acc
+		if not self.plat:
+			if self.pos.x < (-15):
+				self.pos.x = (WIDTH + 15)
+			if self.pos.x > (WIDTH + 15):
+				self.pos.x = (-15)
+		self.rect.midbottom = self.pos
+	def jump(self):
+		pass
+	def cancel_jump(self):
+		pass
 
 def plat_gen(min = 0, max = -50):
 	while len(platforms) < 7:
@@ -140,6 +168,7 @@ def startnew():
 	global all_sprites
 	global gamestate
 	global killtimer
+	ep = EvilPlayer()
 	pt1 = Platform()
 	pt1.surf = pygame.Surface((WIDTH, 200))
 	pt1.surf.fill((27, 200, 4))
@@ -153,6 +182,7 @@ def startnew():
 
 	platforms.add(pt1)
 	all_sprites.add(pt1)
+	all_sprites.add(ep)
 
 	p1 = Player()
 	all_sprites.add(p1)
