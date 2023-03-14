@@ -1,6 +1,5 @@
 #made by tmk2-0
 from re import A
-from turtle import done
 import pygame
 from random import randint as rand
 from pygame.locals import *
