@@ -121,9 +121,26 @@ class EvilPlayer (Player):
 				self.pos.x = (-15)
 		self.rect.midbottom = self.pos
 	def jump(self):
-		pass
+		if self.jumpcount < MAXJ:
+			self.vel.y -= 15
+			self.jumpcount += 1
 	def cancel_jump(self):
 		pass
+	def eupdate(self, p1):
+		jumpmovechance = rand(1, 300)
+
+		if jumpmovechance == 1:
+			self.jump()
+		if jumpmovechance == 100:
+			self.jump()
+		elif jumpmovechance == 200:
+			self.vel.x -= 30
+		elif jumpmovechance == 300:
+			self.vel.x += 30
+
+	def jumpadv(self, dest):
+		x_f = dest.x
+		y_f = dest.y
 
 def plat_gen(min = 0, max = -50):
 	while len(platforms) < 7:
@@ -168,6 +185,7 @@ def startnew():
 	global all_sprites
 	global gamestate
 	global killtimer
+	global ep
 	ep = EvilPlayer()
 	pt1 = Platform()
 	pt1.surf = pygame.Surface((WIDTH, 200))
@@ -210,6 +228,7 @@ while True:
 			displaySurface.blit(sprite.surf, sprite.rect)
 			sprite.move()
 			sprite.update()
+		ep.eupdate(p1)
 		scoresurf = f.render(str(p1.score//10), True, (255, 255, 255))
 		displaySurface.blit(scoresurf,(WIDTH/30, 20))
 		if p1.rect.top <= HEIGHT/3:
