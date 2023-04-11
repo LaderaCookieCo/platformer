@@ -4,17 +4,18 @@ import pygame
 from random import randint as rand
 from pygame.locals import *
 from time import sleep as sl
+import math as m
 vec = pygame.math.Vector2
 
 pygame.init()
 FPS = 60
-WIDTH = 735
-HEIGHT = 800 #480
+WIDTH = 720
+HEIGHT = 480
 ACC = 0.5
 MAXJ = 3
 fric = -0.12
 size = (WIDTH, HEIGHT)
-displaySurface = pygame.display.set_mode(size)
+displaySurface = pygame.display.set_mode(size, pygame.RESIZABLE)
 framePerSec = pygame.time.Clock()
 f = pygame.font.SysFont("SourceCodePro-Bold", 24)
 f64 = pygame.font.SysFont("SourceCodePro-Bold", 64)
@@ -105,6 +106,8 @@ class Player(pygame.sprite.Sprite):
 class EvilPlayer (Player):
 	def __init__(self):
 		super().__init__()
+		self.vel = vec(0, 0)
+		self.acc = vec(0, ACC)
 		self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT/1.32))
 		self.surf.fill((255, 255, 0))
 		self.speed = 0.3
@@ -125,21 +128,35 @@ class EvilPlayer (Player):
 			self.jumpcount += 1
 	def cancel_jump(self):
 		pass
-	def eupdate(self, p1):
-		jumpmovechance = rand(1, 300)
+
+#evil player physics
+
+	def eupdate(self, p1, platforms):
+		closestp = self.closestplatform(platforms)
+		jumpmovechance = rand(1, 10000)
 
 		if jumpmovechance == 1:
-			self.jump()
-		if jumpmovechance == 100:
-			self.jump()
-		elif jumpmovechance == 200:
-			self.vel.x -= 30
-		elif jumpmovechance == 300:
-			self.vel.x += 30
+			self.jumpadv(platforms.sprites()[closestp])
 
 	def jumpadv(self, dest):
-		x_f = dest.x
-		y_f = dest.y
+		jtime = 0.2
+		h = dest.rect.y - self.pos.y
+		xpos = dest.rect.x - self.pos.x
+		yv = m.sqrt(2 * ACC * m.fabs(h))
+		xv = xpos/jtime
+		self.vel = vec(xv, yv)
+		
+#platform closeness checker
+
+	def closestplatform(self, platforms):
+		min = m.sqrt(pow(platforms.sprites()[0].rect.y - self.pos.y, 2) + pow(platforms.sprites()[0].rect.x - self.pos.x, 2))
+		minindex = 0
+		for i, platform in enumerate(platforms.sprites()):
+			dist = m.sqrt(pow(platform.rect.y - self.pos.y, 2) + pow(platform.rect.x - self.pos.x, 2))
+			if dist < min:
+				min = dist
+				minindex = i
+		return minindex
 
 def plat_gen(min = 0, max = -50):
 	while len(platforms) < 7:
@@ -210,6 +227,8 @@ def startnew():
 startnew()
 
 while True:
+	HEIGHT = displaySurface.get_height()
+	WIDTH = displaySurface.get_width()
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			pygame.quit()
@@ -227,7 +246,7 @@ while True:
 			displaySurface.blit(sprite.surf, sprite.rect)
 			sprite.move()
 			sprite.update()
-		ep.eupdate(p1)
+		ep.eupdate(p1, platforms)
 		scoresurf = f.render(str(p1.score//10), True, (255, 255, 255))
 		displaySurface.blit(scoresurf,(WIDTH/30, 20))
 		if p1.rect.top <= HEIGHT/3:
