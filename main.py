@@ -204,7 +204,7 @@ def startnew():
 	global ep
 	ep = EvilPlayer()
 	pt1 = Platform()
-	pt1.surf = pygame.Surface((WIDTH, 200))
+	pt1.surf = pygame.Surface(((WIDTH + 100), 200))
 	pt1.surf.fill((27, 200, 4))
 	pt1.speed = 0
 	pt1.rect = pt1.surf.get_rect(topleft = (0, int(HEIGHT)/1.32))
@@ -227,9 +227,15 @@ def startnew():
 startnew()
 
 while True:
-	HEIGHT = displaySurface.get_height()
-	WIDTH = displaySurface.get_width()
 	for event in pygame.event.get():
+		if event.type == pygame.VIDEORESIZE:
+			WIDTH, HEIGHT = event.w, event.h
+			old_surface_saved = displaySurface
+			displaySurface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+			pt1.surf = pygame.Surface((WIDTH, 300))
+			pt1.surf.fill((27, 200, 4))
+			pt1.rect.width = WIDTH
+			pt1.rect.midbottom = ((WIDTH/2), HEIGHT)
 		if event.type == QUIT:
 			pygame.quit()
 		if event.type == KEYDOWN and gamestate:
